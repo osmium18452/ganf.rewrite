@@ -85,6 +85,9 @@ class Dataloader:
     def load_labels(self):
         return torch.Tensor(self.test_set_label)
 
+    def load_n_sensors(self):
+        return self.sensor_num
+
 
 if __name__ == '__main__':
     # a=np.arange(100)
