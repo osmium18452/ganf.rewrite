@@ -1,6 +1,7 @@
 import os.path
 
 import numpy as np
+from sklearn.metrics import roc_auc_score
 
 from Dataloader import Dataloader
 
@@ -10,6 +11,8 @@ import torch
 from torch.nn.init import xavier_uniform_
 from ganf import Ganf
 from models.GANF import GANF
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -95,7 +98,18 @@ if __name__ == '__main__':
     # print(type(train_set), type(test_set), type(labels))
 
     ganf=Ganf(n_sensor, cuda, n_blocks, hidden_size, hidden_layers, batch_norm)
-    ganf.train_step_one(train_set, learning_rate, batch_size, weight_decay, cuda)
+    ganf.tune_matrix_A(train_set, learning_rate, batch_size, weight_decay, cuda)
+    ganf.train_model(train_set, learning_rate, batch_size, weight_decay, epoch, cuda)
+    loss_list=ganf.evaluate(test_set,batch_size,cuda)
+    print(np.where(np.isnan(loss_list)==True))
+    print(np.min(loss_list),np.max(loss_list))
+    roc_val = roc_auc_score(labels, loss_list)
+    print('roc:',roc_val)
+    roc_val_val=roc_auc_score(labels[:labels.shape[0]//2],loss_list[:labels.shape[0]//2])
+    roc_val_test=roc_auc_score(labels[labels.shape[0]//2:],loss_list[labels.shape[0]//2:])
+    print('val roc, test roc',roc_val_val,roc_val_test)
+
+
 
 
 
