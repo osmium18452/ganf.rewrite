@@ -61,16 +61,21 @@ class Dataloader:
         else:
             train_set_indices = np.arange(0, self.train_data_size - window_size, stride) \
                 .repeat(window_size).reshape(-1, window_size)
+            # print(train_set_indices)
             total_train_samples = train_set_indices.shape[0]
             test_set_indices = np.arange(0, self.test_data_size - window_size, stride) \
                 .repeat(window_size).reshape(-1, window_size)
             total_test_samples = test_set_indices.shape[0]
             window = np.arange(window_size)
             train_window_mask = np.tile(window, total_train_samples).reshape(total_train_samples, -1)
-            train_set_mask = train_window_mask + window
+            train_set_mask = train_window_mask + train_set_indices
             test_window_mask = np.tile(window, total_test_samples).reshape(total_test_samples, -1)
-            test_set_mask = test_window_mask + window
+            test_set_mask = test_window_mask + test_set_indices
             label_mask = test_set_mask[:, -1]
+            # print(test_set_mask.shape,label_mask.shape)
+            # print(train_set_mask)
+            # print('label mask',label_mask)
+            # exit()
             self.train_set = np.expand_dims(self.nc_train_data[train_set_mask].transpose((0, 2, 1)), axis=-1)
             self.test_set = np.expand_dims(self.nc_test_data[test_set_mask].transpose((0, 2, 1)), axis=-1)
             self.test_set_label = self.label_data[label_mask]
@@ -84,6 +89,9 @@ class Dataloader:
 
     def load_labels(self):
         return torch.Tensor(self.test_set_label)
+
+    def load_labels_numpy(self):
+        return self.test_set_label
 
     def load_n_sensors(self):
         return self.sensor_num
